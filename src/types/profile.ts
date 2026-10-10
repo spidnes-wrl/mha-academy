@@ -1,0 +1,20 @@
+export type ProfileRow = {
+  id: string;
+  user_id: string;
+  username: string;
+  private_id: string | null;
+  email: string;
+  first_name: string | null;
+  last_name: string | null;
+  avatar_url: string | null;
+  bio: string | null;
+  class_rank: 'A' | 'B' | 'C' | 'E' | 'S';
+  role: 'student' | 'teacher' | 'director';
+  exam_points: number;
+  xp: number;
+  virtual_coins: number;
+  is_active: boolean;
+  is_public: boolean;
+  created_at: string;
+  updated_at: string;
+};
