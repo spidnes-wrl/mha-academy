@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #0f1720;
+  color: #f8fafc;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.card {
+  @apply rounded-2xl border border-neutralBorder bg-neutralCard p-5 shadow-lg;
+}
+
+.input {
+  @apply w-full rounded-xl border border-neutralBorder bg-slate-950/50 px-4 py-3 text-white outline-none transition focus:border-primaryLight;
+}
+
+.button-primary {
+  @apply rounded-xl bg-primaryGreen px-5 py-3 font-medium text-white transition hover:bg-primaryLight;
+}
+
+.button-secondary {
+  @apply rounded-xl border border-neutralBorder bg-neutralCard px-5 py-3 font-medium text-white transition hover:border-primaryLight hover:text-primaryLight;
+}

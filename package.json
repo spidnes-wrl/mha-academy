@@ -1,54 +1,39 @@
 {
   "name": "mha-academy",
   "version": "1.0.0",
-  "description": "MHA Academy - Plateforme académique complète avec gestion d'étudiants, échecs en ligne, économie virtuelle",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "type-check": "tsc --noEmit",
-    "db:push": "supabase db push",
-    "db:pull": "supabase db pull",
-    "generate:types": "supabase gen types typescript --local > src/types/supabase.ts"
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.38.4",
-    "@supabase/ssr": "^0.0.10",
-    "next": "^14.0.3",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "typescript": "^5.3.3",
-    "tailwindcss": "^3.3.6",
-    "postcss": "^8.4.31",
-    "autoprefixer": "^10.4.16",
-    "react-icons": "^4.12.0",
-    "lucide-react": "^0.294.0",
-    "framer-motion": "^10.16.4",
-    "zustand": "^4.4.1",
-    "clsx": "^2.0.0",
+    "@supabase/ssr": "^0.5.2",
+    "@supabase/supabase-js": "^2.49.4",
+    "clsx": "^2.1.1",
     "date-fns": "^2.30.0",
-    "axios": "^1.6.2",
+    "framer-motion": "^11.11.11",
+    "lucide-react": "^0.453.0",
+    "next": "14.2.15",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
     "react-hot-toast": "^2.4.1",
-    "recharts": "^2.10.3",
-    "html2canvas": "^1.4.1",
-    "jspdf": "^2.5.1",
-    "chess.js": "^1.0.0-beta.8",
-    "react-chessboard": "^3.2.0"
+    "react-icons": "^5.0.1",
+    "recharts": "^2.12.7",
+    "tailwindcss": "^3.4.13",
+    "typescript": "^5.6.2",
+    "zustand": "^4.7.0"
   },
   "devDependencies": {
-    "@types/node": "^20.9.0",
-    "@types/react": "^18.2.37",
-    "@types/react-dom": "^18.2.15",
-    "eslint": "^8.52.0",
-    "eslint-config-next": "^14.0.0",
-    "@typescript-eslint/eslint-plugin": "^6.10.0",
-    "@typescript-eslint/parser": "^6.10.0",
-    "supabase": "^1.118.0"
-  },
-  "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=9.0.0"
+    "@types/node": "^22.7.5",
+    "@types/react": "^18.3.5",
+    "@types/react-dom": "^18.3.0",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^14.2.15",
+    "postcss": "^8.4.47",
+    "supabase": "^1.200.0"
   }
 }
