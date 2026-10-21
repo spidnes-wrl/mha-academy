@@ -16,53 +16,48 @@ const classes = [
   { name: 'Terminal S', value: '94% de réussite' },
 ];
 
-const glass = 'border border-white/10 bg-white/[0.06] backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.35)]';
-
 export default function ClassementsPage() {
   return (
-    <main className="min-h-screen bg-[#06120d] text-white">
-      <div className="mx-auto max-w-6xl px-5 py-8 sm:px-8">
-        <header className="flex items-center justify-between gap-4">
-          <div>
-            <p className="text-sm uppercase tracking-[0.2em] text-emerald-300">Classements</p>
-            <h1 className="mt-2 text-3xl font-black">Leardboard & classes</h1>
-          </div>
-          <Link href="/dashboard" className="rounded-xl border border-white/10 px-4 py-2 text-sm hover:bg-white/5">
-            Retour au dashboard
-          </Link>
-        </header>
+    <main className="page-shell">
+      <header className="page-header">
+        <div>
+          <span className="page-header__eyebrow">Classements</span>
+          <h1 className="page-header__title">Leaderboard & classes</h1>
+        </div>
 
-        <section className="mt-8 grid gap-6 lg:grid-cols-2">
-          <div className={`${glass} rounded-3xl p-5`}>
-            <h2 className="text-xl font-bold">Classement global</h2>
-            <div className="mt-5 space-y-3">
-              {leaderboard.map((student) => (
-                <div key={student.name} className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xl">{student.badge}</span>
-                    <span className="font-medium">{student.name}</span>
-                  </div>
-                  <span className="text-sm text-emerald-300">{student.score}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+        <Link href="/dashboard" className="secondary-button">Retour au dashboard</Link>
+      </header>
 
-          <div className={`${glass} rounded-3xl p-5`}>
-            <h2 className="text-xl font-bold">Performances par classe</h2>
-            <div className="mt-5 space-y-3">
-              {classes.map((item) => (
-                <div key={item.name} className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium">{item.name}</span>
-                    <span className="text-xs text-cyan-300">{item.value}</span>
-                  </div>
+      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 24 }}>
+        <div className="content-panel glass-panel">
+          <h2 style={{ fontSize: '1.6rem', marginBottom: 18 }}>Classement global</h2>
+
+          <div style={{ display: 'grid', gap: 12 }}>
+            {leaderboard.map((student) => (
+              <div key={student.name} className="resource-item">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span style={{ fontSize: '1.3rem' }}>{student.badge}</span>
+                  <span>{student.name}</span>
                 </div>
-              ))}
-            </div>
+                <span style={{ color: '#8cffc0', fontWeight: 700 }}>{student.score}</span>
+              </div>
+            ))}
           </div>
-        </section>
-      </div>
+        </div>
+
+        <div className="sidebar-panel glass-panel">
+          <h2 style={{ fontSize: '1.6rem', marginBottom: 18 }}>Performances par classe</h2>
+
+          <div style={{ display: 'grid', gap: 12 }}>
+            {classes.map((item) => (
+              <div key={item.name} className="resource-item">
+                <span>{item.name}</span>
+                <small style={{ color: '#8fe9ff' }}>{item.value}</small>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
     </main>
   );
 }

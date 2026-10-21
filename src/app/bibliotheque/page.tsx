@@ -9,38 +9,33 @@ const resources = [
   { title: 'Analyse avancée', category: 'Data', lessons: '7 leçons' },
 ];
 
-const glass = 'border border-white/10 bg-white/[0.06] backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.35)]';
-
 export default function BibliothequePage() {
   return (
-    <main className="min-h-screen bg-[#06120d] text-white">
-      <div className="mx-auto max-w-6xl px-5 py-8 sm:px-8">
-        <header className="flex items-center justify-between gap-4">
-          <div>
-            <p className="text-sm uppercase tracking-[0.2em] text-emerald-300">Bibliothèque</p>
-            <h1 className="mt-2 text-3xl font-black">Ressources académiques</h1>
-          </div>
-          <Link href="/dashboard" className="rounded-xl border border-white/10 px-4 py-2 text-sm hover:bg-white/5">
-            Retour au dashboard
-          </Link>
-        </header>
+    <main className="page-shell">
+      <header className="page-header">
+        <div>
+          <span className="page-header__eyebrow">Bibliothèque</span>
+          <h1 className="page-header__title">Ressources académiques</h1>
+        </div>
 
-        <section className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {resources.map((resource) => (
-            <article key={resource.title} className={`${glass} rounded-3xl p-5`}>
-              <p className="text-xs uppercase tracking-[0.2em] text-emerald-200">{resource.category}</p>
-              <h2 className="mt-3 text-xl font-bold">{resource.title}</h2>
-              <p className="mt-2 text-sm text-white/70">{resource.lessons}</p>
+        <Link href="/dashboard" className="secondary-button">Retour au dashboard</Link>
+      </header>
 
-              <div className="mt-5">
-                <Link href="/dashboard" className="inline-flex rounded-xl bg-[#f4ad5a] px-4 py-2 text-sm font-semibold text-[#1a1208] hover:bg-[#f7bd78]">
-                  Ouvrir
-                </Link>
-              </div>
-            </article>
-          ))}
-        </section>
-      </div>
+      <section className="card-grid" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
+        {resources.map((resource) => (
+          <article key={resource.title} className="task-card glass-panel">
+            <span className="pill" style={{ display: 'inline-flex' }}>{resource.category}</span>
+            <h2 style={{ marginTop: 18, fontSize: '1.35rem' }}>{resource.title}</h2>
+            <p style={{ marginTop: 12 }}>{resource.lessons}</p>
+
+            <div style={{ marginTop: 22 }}>
+              <Link href="/dashboard" className="button-primary" style={{ padding: '10px 14px', fontSize: '0.8rem' }}>
+                Ouvrir
+              </Link>
+            </div>
+          </article>
+        ))}
+      </section>
     </main>
   );
 }
