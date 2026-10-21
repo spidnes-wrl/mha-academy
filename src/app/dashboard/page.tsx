@@ -1,63 +1,53 @@
-import { NextResponse } from 'next/server';
+import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { requireAuthenticatedUser } from '@/lib/permissions';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 
-export async function POST(request: Request) {
+export default async function DashboardPage() {
+  let user;
   try {
-    const user = await requireAuthenticatedUser();
-    const body = await request.json();
-    const amount = Number(body?.amount ?? 0);
-    const description = typeof body?.description === 'string' ? body.description : 'Virtual transaction';
-
-    if (!Number.isFinite(amount) || amount === 0) {
-      return NextResponse.json({ error: 'Invalid amount' }, { status: 400 });
-    }
-
-    const supabase = createSupabaseServerClient();
-
-    const { data: profile, error: profileError } = await supabase
-      .from('hma_profiles')
-      .select('virtual_coins')
-      .eq('user_id', user.id)
-      .single();
-
-    if (profileError || !profile) {
-      return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
-    }
-
-    const balanceBefore = Number(profile.virtual_coins ?? 0);
-    const balanceAfter = balanceBefore + amount;
-
-    const { error: txError } = await supabase.from('hma_point_transactions').insert({
-      user_id: user.id,
-      amount,
-      transaction_type: amount > 0 ? 'reward' : 'refund',
-      description,
-      balance_before: balanceBefore,
-      balance_after: balanceAfter,
-    });
-
-    if (txError) {
-      return NextResponse.json({ error: txError.message }, { status: 400 });
-    }
-
-    const { error: updateError } = await supabase
-      .from('hma_profiles')
-      .update({ virtual_coins: balanceAfter })
-      .eq('user_id', user.id);
-
-    if (updateError) {
-      return NextResponse.json({ error: updateError.message }, { status: 400 });
-    }
-
-    return NextResponse.json({
-      success: true,
-      balanceBefore,
-      balanceAfter,
-      amount,
-      description,
-    }, { status: 200 });
-  } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'Unauthorized' }, { status: 401 });
+    user = await requireAuthenticatedUser();
+  } catch {
+    redirect('/auth/login');
   }
+
+  const supabase = createSupabaseServerClient();
+  const { data: profile } = await supabase
+    .from('hma_profiles')
+    .select('first_name, username, exam_points, xp, class_rank, virtual_coins')
+    .eq('user_id', user.id)
+    .single();
+
+  const displayName = profile?.first_name || profile?.username || 'étudiant';
+  const stats: [string, string][] = [
+    ['Points d’examen', String(profile?.exam_points ?? 0)],
+    ['XP', String(profile?.xp ?? 0)],
+    ['Classe', profile?.class_rank ?? '-'],
+    ['Pièces', String(profile?.virtual_coins ?? 0)],
+  ];
+
+  return (
+    <main className="min-h-screen bg-neutralBg px-6 py-10 text-white">
+      <div className="mx-auto max-w-7xl">
+        <header className="mb-8 flex items-center justify-between">
+          <div>
+            <p className="text-sm uppercase tracking-[0.28em] text-emerald-300">Tableau de bord</p>
+            <h1 className="mt-2 text-3xl font-bold">Bienvenue, {displayName}</h1>
+          </div>
+          <Link href="/" className="button-secondary">
+            Accueil
+          </Link>
+        </header>
+
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          {stats.map(([label, value]) => (
+            <div key={label} className="card">
+              <p className="text-sm text-slate-400">{label}</p>
+              <p className="mt-4 text-3xl font-bold text-emerald-300">{value}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </main>
+  );
 }

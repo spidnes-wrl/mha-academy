@@ -1,4 +1,4 @@
-import { createSupabaseServerClient } from './server';
+import { createSupabaseServerClient } from './supabase/server';
 
 export type Role = 'student' | 'teacher' | 'director';
 export type ClassRank = 'A' | 'B' | 'C' | 'E' | 'S';
