@@ -14,20 +14,12 @@ alter table public.hma_documents enable row level security;
 create policy "Public documents viewable by all authenticated users"
 on public.hma_documents
 for select
-using (access_level = 'public' or exists (
-  select 1 from public.hma_profiles p
-  where p.user_id = auth.uid() and p.role in ('teacher','director')
-));
+using (access_level = 'public' or public.hma_current_role() in ('teacher', 'director'));
 
 create policy "Only admins manage documents"
 on public.hma_documents
 for insert
-with check (
-  exists (
-    select 1 from public.hma_profiles p
-    where p.user_id = auth.uid() and p.role in ('teacher','director')
-  )
-);
+with check (public.hma_current_role() in ('teacher', 'director'));
 
 create index if not exists idx_hma_documents_access on public.hma_documents(access_level);
 create index if not exists idx_hma_documents_category on public.hma_documents(category);

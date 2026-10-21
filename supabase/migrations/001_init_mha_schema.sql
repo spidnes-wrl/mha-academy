@@ -143,12 +143,99 @@ create table if not exists hma_private.profile_secrets (
 );
 
 create or replace function public.set_updated_at()
-returns trigger as $$
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
 begin
   new.updated_at = now();
   return new;
 end;
-$$ language plpgsql;
+$$;
+
+create or replace function public.hma_current_role()
+returns text
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select role from public.hma_profiles where user_id = auth.uid()
+$$;
+
+create or replace function public.hma_protect_profile_fields()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  actor_role text := public.hma_current_role();
+begin
+  if auth.uid() is null then
+    return new;
+  end if;
+
+  new.user_id := old.user_id;
+
+  if coalesce(actor_role, '') <> 'director' then
+    new.role := old.role;
+  end if;
+
+  if coalesce(actor_role, '') not in ('teacher', 'director') then
+    new.exam_points := old.exam_points;
+    new.xp := old.xp;
+    new.virtual_coins := old.virtual_coins;
+    new.class_rank := old.class_rank;
+  end if;
+
+  return new;
+end;
+$$;
+
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  base_username text := lower(regexp_replace(
+    coalesce(nullif(new.raw_user_meta_data ->> 'username', ''), split_part(new.email, '@', 1)),
+    '[^a-zA-Z0-9_]', '', 'g'
+  ));
+  final_username text;
+begin
+  if base_username = '' then
+    base_username := 'eleve';
+  end if;
+
+  final_username := base_username;
+  if exists (select 1 from public.hma_profiles where username = final_username) then
+    final_username := base_username || '_' || substr(replace(new.id::text, '-', ''), 1, 6);
+  end if;
+
+  insert into public.hma_profiles (user_id, username, email, first_name, last_name)
+  values (
+    new.id,
+    final_username,
+    new.email,
+    nullif(new.raw_user_meta_data ->> 'first_name', ''),
+    nullif(new.raw_user_meta_data ->> 'last_name', '')
+  )
+  on conflict (user_id) do nothing;
+
+  return new;
+end;
+$$;
+
+create trigger on_auth_user_created
+after insert on auth.users
+for each row execute procedure public.handle_new_user();
+
+create trigger trg_profiles_protect_fields
+before update on public.hma_profiles
+for each row execute procedure public.hma_protect_profile_fields();
 
 create trigger trg_profiles_updated_at
 before update on public.hma_profiles
@@ -205,49 +292,25 @@ for select
 using (
   is_public = true
   or user_id = auth.uid()
-  or exists (
-    select 1 from public.hma_profiles ap
-    where ap.user_id = auth.uid() and ap.role in ('teacher', 'director')
-  )
+  or public.hma_current_role() in ('teacher', 'director')
 );
 
-create policy "Users may update only own profile fields"
+create policy "Users may update own profile, staff may update members"
 on public.hma_profiles
 for update
-using (user_id = auth.uid())
-with check (
-  user_id = auth.uid()
-  and role = old.role
-  and exam_points = old.exam_points
-  and xp = old.xp
-  and virtual_coins = old.virtual_coins
-);
+using (user_id = auth.uid() or public.hma_current_role() in ('teacher', 'director'))
+with check (user_id = auth.uid() or public.hma_current_role() in ('teacher', 'director'));
 
 create policy "Admin may manage member profiles"
 on public.hma_profiles
 for insert
-with check (
-  exists (
-    select 1 from public.hma_profiles ap
-    where ap.user_id = auth.uid() and ap.role in ('teacher','director')
-  )
-);
+with check (public.hma_current_role() in ('teacher', 'director'));
 
 create policy "Admins manage rules"
 on public.hma_rules
 for all
-using (
-  exists (
-    select 1 from public.hma_profiles ap
-    where ap.user_id = auth.uid() and ap.role = 'director'
-  )
-)
-with check (
-  exists (
-    select 1 from public.hma_profiles ap
-    where ap.user_id = auth.uid() and ap.role = 'director'
-  )
-);
+using (public.hma_current_role() = 'director')
+with check (public.hma_current_role() = 'director');
 
 create policy "Users can read their own logs"
 on public.action_logs

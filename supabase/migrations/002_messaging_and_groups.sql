@@ -56,9 +56,38 @@ with check (
   and receiver_id is not null
   and not exists (
     select 1 from public.hma_user_blocks b
-    where b.user_id = auth.uid() and b.blocked_user_id = new.receiver_id
+    where b.user_id = auth.uid() and b.blocked_user_id = hma_messages.receiver_id
   )
 );
+
+create or replace function public.hma_is_group_member(target_group uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1 from public.hma_group_members
+    where group_id = target_group and user_id = auth.uid()
+  )
+$$;
+
+create or replace function public.hma_is_group_manager(target_group uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1 from public.hma_groups
+    where id = target_group and owner_id = auth.uid()
+  ) or exists (
+    select 1 from public.hma_group_members
+    where group_id = target_group and user_id = auth.uid() and role in ('owner', 'mod')
+  )
+$$;
 
 create policy "Users can read groups they belong to or public groups"
 on public.hma_groups
@@ -66,10 +95,7 @@ for select
 using (
   is_private = false
   or owner_id = auth.uid()
-  or exists (
-    select 1 from public.hma_group_members gm
-    where gm.group_id = hma_groups.id and gm.user_id = auth.uid()
-  )
+  or public.hma_is_group_member(id)
 );
 
 create policy "Authenticated users can create groups"
@@ -82,25 +108,13 @@ on public.hma_group_members
 for select
 using (
   user_id = auth.uid()
-  or exists (
-    select 1 from public.hma_groups g
-    where g.id = hma_group_members.group_id and g.owner_id = auth.uid()
-  )
+  or public.hma_is_group_manager(group_id)
 );
 
 create policy "Owners or mods manage members"
 on public.hma_group_members
 for insert
-with check (
-  exists (
-    select 1 from public.hma_groups g
-    where g.id = new.group_id and g.owner_id = auth.uid()
-  )
-  or exists (
-    select 1 from public.hma_group_members gm
-    where gm.group_id = new.group_id and gm.user_id = auth.uid() and gm.role in ('owner','mod')
-  )
-);
+with check (public.hma_is_group_manager(hma_group_members.group_id));
 
 create policy "Users can read own blocks"
 on public.hma_user_blocks
