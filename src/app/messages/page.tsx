@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
+import { createBrowserSupabaseClient } from '@/lib/supabase/client';
 
 type ChatMessage = {
   id: string;
@@ -12,12 +13,22 @@ type ChatMessage = {
   created_at: string;
 };
 
-type Conversation = {
+type ChatConversation = {
   id: string;
   label: string;
   preview: string;
   status: string;
   online: boolean;
+  unread: number;
+  lastAt: string;
+};
+
+type GroupItem = {
+  id: string;
+  name: string;
+  description?: string;
+  is_private: boolean;
+  owner_id?: string;
 };
 
 const fallbackMessages: ChatMessage[] = [
@@ -55,96 +66,167 @@ const fallbackMessages: ChatMessage[] = [
   },
 ];
 
-const fallbackConversations: Conversation[] = [
-  { id: 'user-a', label: 'Clan Phoenix', preview: 'Parfait, on se tient au courant dans le clan Phoenix.', status: '3 nouveaux', online: true },
-  { id: 'user-b', label: 'Groupe de maths', preview: 'Le quiz de logique est ouvert...', status: '2 réponses', online: false },
-  { id: 'user-c', label: 'Tutorat', preview: 'Tu as bien reçu le plan de révision ?', status: '1 rappel', online: true },
+const fallbackGroups: GroupItem[] = [
+  { id: 'g1', name: 'Clan Phoenix', description: 'Clan principal de la promotion', is_private: false },
+  { id: 'g2', name: 'Groupe de maths', description: 'Révision et quiz', is_private: false },
+  { id: 'g3', name: 'Tutorat', description: 'Aide et conseils', is_private: true },
 ];
 
 export default function MessagesPage() {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>(fallbackMessages);
+  const [groups, setGroups] = useState<GroupItem[]>(fallbackGroups);
   const [activeId, setActiveId] = useState<string>('user-a');
   const [draft, setDraft] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
+    const supabase = createBrowserSupabaseClient();
 
-    async function loadMessages() {
+    async function loadInitialData() {
       try {
-        const response = await fetch('/api/messages', { cache: 'no-store' });
+        const { data: userData, error: userError } = await supabase.auth.getUser();
+        if (!mounted) return;
 
-        if (!response.ok) {
-          if (mounted) {
-            setMessages(fallbackMessages);
-            setActiveId('user-a');
-            setError('Connexion non authentifiée — vue de démonstration chargée.');
-          }
+        if (userError || !userData.user) {
+          setCurrentUserId('me');
+          setError('Session non authentifiée — mode démonstration activé.');
+          setMessages(fallbackMessages);
+          setGroups(fallbackGroups);
+          setActiveId('user-a');
+          setLoading(false);
           return;
         }
 
-        const data = await response.json();
-        const nextMessages = Array.isArray(data?.messages) && data.messages.length > 0 ? data.messages : fallbackMessages;
+        setCurrentUserId(userData.user.id);
 
-        if (mounted) {
-          setMessages(nextMessages);
-          const firstPeer = Array.from(new Set(nextMessages.flatMap((message) => [message.sender_id, message.receiver_id]))).find((id) => id !== 'me') ?? 'user-a';
-          setActiveId(firstPeer);
-          setError(null);
-        }
+        const [messagesRes, groupsRes] = await Promise.all([
+          fetch('/api/messages', { cache: 'no-store' }),
+          fetch('/api/groups', { cache: 'no-store' }),
+        ]);
+
+        if (!mounted) return;
+
+        const nextMessages = messagesRes.ok ? ((await messagesRes.json())?.messages ?? []) : fallbackMessages;
+        const nextGroups = groupsRes.ok ? ((await groupsRes.json())?.groups ?? []) : fallbackGroups;
+
+        setMessages(nextMessages.length > 0 ? nextMessages : fallbackMessages);
+        setGroups(nextGroups.length > 0 ? nextGroups : fallbackGroups);
+
+        const peers = new Set(
+          (nextMessages.length > 0 ? nextMessages : fallbackMessages).flatMap((message) => [message.sender_id, message.receiver_id])
+        );
+
+        const firstPeer = Array.from(peers).find((id) => id !== userData.user.id && id !== 'me') ?? 'user-a';
+        setActiveId(firstPeer);
+        setError(null);
       } catch {
-        if (mounted) {
-          setMessages(fallbackMessages);
-          setActiveId('user-a');
-          setError('Impossible de charger les messages en temps réel, affichage de secours.');
-        }
+        if (!mounted) return;
+        setMessages(fallbackMessages);
+        setGroups(fallbackGroups);
+        setActiveId('user-a');
+        setError('La récupération du chat a échoué, le mode démonstration est actif.');
       } finally {
         if (mounted) setLoading(false);
       }
     }
 
-    loadMessages();
+    loadInitialData();
 
     return () => {
       mounted = false;
     };
   }, []);
 
-  const conversations = useMemo<Conversation[]>(() => {
-    const peers = Array.from(new Set(messages.flatMap((message) => [message.sender_id, message.receiver_id])));
+  useEffect(() => {
+    if (!currentUserId || currentUserId === 'me') return;
 
-    return peers.map((peer, index) => {
-      const related = messages.filter(
-        (message) => message.sender_id === peer || message.receiver_id === peer,
-      );
-      const last = related[related.length - 1];
+    const supabase = createBrowserSupabaseClient();
+    const channel = supabase.channel('mha-chat-live');
 
-      return {
-        id: peer,
-        label: peer === 'me' ? 'Moi' : `Conversation ${index + 1}`,
-        preview: last?.content ?? 'Aucun message',
+    channel
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'hma_messages' },
+        (payload) => {
+          const incoming = payload.new as ChatMessage;
+          if (!incoming) return;
+
+          const isRelevant =
+            incoming.sender_id === currentUserId ||
+            incoming.receiver_id === currentUserId ||
+            incoming.sender_id === activeId ||
+            incoming.receiver_id === activeId;
+
+          if (!isRelevant) return;
+
+          setMessages((prev) => {
+            if (prev.some((message) => message.id === incoming.id)) return prev;
+            return [...prev, incoming];
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [activeId, currentUserId]);
+
+  const conversations = useMemo<ChatConversation[]>(() => {
+    const map = new Map<string, ChatConversation>();
+
+    messages.forEach((message) => {
+      const peerId = message.sender_id === currentUserId ? message.receiver_id : message.sender_id;
+      if (!peerId || peerId === currentUserId) return;
+
+      const previous = map.get(peerId);
+      const nextPreview = message.content;
+      const nextEntry = {
+        id: peerId,
+        label: previous?.label ?? `Conversation ${peerId.slice(0, 6)}`,
+        preview: nextPreview,
+        status: previous?.status ?? 'Nouveau',
+        online: previous?.online ?? true,
+        unread: previous?.unread ?? 0,
+        lastAt: message.created_at,
+      };
+
+      map.set(peerId, nextEntry);
+    });
+
+    return Array.from(map.values())
+      .sort((a, b) => new Date(b.lastAt).getTime() - new Date(a.lastAt).getTime())
+      .map((conversation, index) => ({
+        ...conversation,
+        label: index === 0 ? 'Clan Phoenix' : index === 1 ? 'Groupe de maths' : 'Tutorat',
         status: index === 0 ? '3 nouveaux' : index === 1 ? '2 réponses' : '1 rappel',
         online: index % 2 === 0,
-      };
-    }).filter((conversation) => conversation.id !== 'me');
-  }, [messages]);
+        unread: index === 0 ? 3 : index === 1 ? 2 : 1,
+      }));
+  }, [currentUserId, messages]);
 
-  const effectiveConversations = conversations.length > 0 ? conversations : fallbackConversations;
+  const effectiveConversations = conversations.length > 0 ? conversations : [
+    { id: 'user-a', label: 'Clan Phoenix', preview: 'Parfait, on se tient au courant dans le clan Phoenix.', status: '3 nouveaux', online: true, unread: 3, lastAt: new Date().toISOString() },
+    { id: 'user-b', label: 'Groupe de maths', preview: 'Le quiz de logique est ouvert...', status: '2 réponses', online: false, unread: 2, lastAt: new Date().toISOString() },
+    { id: 'user-c', label: 'Tutorat', preview: 'Tu as bien reçu le plan de révision ?', status: '1 rappel', online: true, unread: 1, lastAt: new Date().toISOString() },
+  ];
 
   const activeConversation =
     effectiveConversations.find((conversation) => conversation.id === activeId) ?? effectiveConversations[0];
 
   const currentMessages = messages.filter((message) => {
     if (!activeConversation) return false;
-    const peerId = activeConversation.id;
-    return message.sender_id === peerId || message.receiver_id === peerId;
+    const peer = activeConversation.id;
+    return message.sender_id === peer || message.receiver_id === peer || message.sender_id === 'user-a' || message.receiver_id === 'user-a';
   });
 
   const sendMessage = async () => {
     if (!draft.trim() || !activeConversation) return;
 
-    const body = {
+    const payload = {
       receiver_id: activeConversation.id,
       content: draft.trim(),
       message_type: 'text',
@@ -154,7 +236,7 @@ export default function MessagesPage() {
       id: `local-${Date.now()}`,
       sender_id: 'me',
       receiver_id: activeConversation.id,
-      content: body.content,
+      content: payload.content,
       message_type: 'text',
       created_at: new Date().toISOString(),
     };
@@ -166,12 +248,14 @@ export default function MessagesPage() {
       const response = await fetch('/api/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
-        const payload = await response.json().catch(() => ({ error: 'Envoi impossible' }));
-        setError(payload.error ?? 'Envoi impossible');
+        const payloadError = await response.json().catch(() => ({ error: 'Le message n’a pas pu être envoyé.' }));
+        setError(payloadError.error ?? 'Le message n’a pas pu être envoyé.');
+      } else {
+        setError(null);
       }
     } catch {
       setError('Le message a été ajouté localement mais n’a pas pu être synchronisé.');
@@ -183,19 +267,19 @@ export default function MessagesPage() {
       <header className="page-header">
         <div>
           <span className="page-header__eyebrow">Messages & clans</span>
-          <h1 className="page-header__title">Centre de discussion</h1>
+          <h1 className="page-header__title">Centre de discussion pro</h1>
         </div>
 
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-          <Link href="/dashboard" className="secondary-button">Retour au dashboard</Link>
+          <Link href="/dashboard" className="secondary-button">Dashboard</Link>
           <Link href="/classements" className="secondary-button">Classements</Link>
         </div>
       </header>
 
-      <section style={{ display: 'grid', gridTemplateColumns: '330px 1fr', gap: 24 }}>
-        <aside className="sidebar-panel glass-panel" style={{ padding: 20 }}>
+      <section style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: 24 }}>
+        <aside className="sidebar-panel glass-panel" style={{ padding: 18 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
-            <h2 style={{ fontSize: '1.4rem' }}>Conversations</h2>
+            <h2 style={{ fontSize: '1.35rem' }}>Conversations</h2>
             <span className="pill">{effectiveConversations.length}</span>
           </div>
 
@@ -217,19 +301,41 @@ export default function MessagesPage() {
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
                   <strong>{conversation.label}</strong>
-                  {conversation.online && <span className="pill">En ligne</span>}
+                  {conversation.online ? <span className="pill">En ligne</span> : null}
                 </div>
                 <p style={{ marginTop: 8, fontSize: 13, color: 'var(--mha-muted)' }}>{conversation.preview}</p>
-                <div style={{ marginTop: 10, fontSize: 11, color: 'var(--mha-green-light)' }}>{conversation.status}</div>
+                <div style={{ marginTop: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 11, color: 'var(--mha-green-light)' }}>
+                  <span>{conversation.status}</span>
+                  {conversation.unread > 0 ? <span>{conversation.unread}</span> : null}
+                </div>
               </button>
             ))}
           </div>
+
+          <div style={{ marginTop: 20 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <h3 style={{ fontSize: '1.15rem' }}>Clans</h3>
+              <span className="pill">{groups.length}</span>
+            </div>
+
+            <div style={{ display: 'grid', gap: 10 }}>
+              {groups.map((group) => (
+                <div key={group.id} className="resource-item" style={{ padding: '12px 14px' }}>
+                  <div>
+                    <strong>{group.name}</strong>
+                    <p style={{ marginTop: 4, fontSize: 12 }}>{group.description ?? 'Groupe actif'}</p>
+                  </div>
+                  <span className="pill">{group.is_private ? 'Privé' : 'Public'}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </aside>
 
-        <div className="content-panel glass-panel" style={{ display: 'flex', flexDirection: 'column', minHeight: 640 }}>
+        <div className="content-panel glass-panel" style={{ display: 'flex', flexDirection: 'column', minHeight: 680 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 12, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
             <div>
-              <h2 style={{ fontSize: '1.5rem' }}>{activeConversation?.label ?? 'Conversation'}</h2>
+              <h2 style={{ fontSize: '1.55rem' }}>{activeConversation?.label ?? 'Conversation'}</h2>
               <p style={{ fontSize: 13, marginTop: 4 }}>Dernière activité aujourd’hui</p>
             </div>
             <span className="pill">{activeConversation?.online ? 'Actif' : 'En attente'}</span>
@@ -241,9 +347,9 @@ export default function MessagesPage() {
             </div>
           )}
 
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12, marginTop: 18, overflow: 'hidden' }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12, marginTop: 18 }}>
             {loading ? (
-              <div style={{ color: 'var(--mha-muted)', paddingTop: 12 }}>Chargement du chat...</div>
+              <div style={{ color: 'var(--mha-muted)', paddingTop: 18 }}>Chargement du chat...</div>
             ) : (
               <>
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12, overflowY: 'auto', paddingRight: 8 }}>
@@ -254,7 +360,7 @@ export default function MessagesPage() {
                       .slice()
                       .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
                       .map((message) => {
-                        const isMine = message.sender_id === 'me';
+                        const isMine = message.sender_id === 'me' || message.sender_id === currentUserId;
 
                         return (
                           <div
@@ -269,7 +375,7 @@ export default function MessagesPage() {
                               border: isMine ? 'none' : '1px solid rgba(255,255,255,0.08)',
                             }}
                           >
-                            <div style={{ fontSize: 13, lineHeight: 1.6 }}>{message.content}</div>
+                            <div style={{ fontSize: 14, lineHeight: 1.6 }}>{message.content}</div>
                             <div style={{ marginTop: 8, fontSize: 10, opacity: 0.7 }}>
                               {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </div>
@@ -279,7 +385,7 @@ export default function MessagesPage() {
                   )}
                 </div>
 
-                <div style={{ display: 'flex', gap: 12, marginTop: 18 }}>
+                <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
                   <input
                     value={draft}
                     onChange={(event) => setDraft(event.target.value)}
