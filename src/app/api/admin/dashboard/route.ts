@@ -7,19 +7,19 @@ export async function GET() {
     await requireAdminAccess();
     const supabase = createSupabaseServerClient();
 
-    const { data: members, memberError } = await supabase
+    const { data: members, error: memberError } = await supabase
       .from('hma_profiles')
       .select('id, user_id, username, email, class_rank, role');
 
-    const { data: missions, missionsError } = await supabase
+    const { data: missions, error: missionsError } = await supabase
       .from('hma_missions')
       .select('id, status');
 
-    const { data: events, eventsError } = await supabase
+    const { data: events, error: eventsError } = await supabase
       .from('hma_events')
       .select('id, status');
 
-    const { data: transactions, transactionsError } = await supabase
+    const { data: transactions, error: transactionsError } = await supabase
       .from('hma_point_transactions')
       .select('id');
 

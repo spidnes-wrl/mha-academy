@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAuthenticatedUser } from '@/lib/permissions';
-import { safeProfileUpdatePayload } from '@/lib/profile';
+import { safeProfileUpdatePayload } from '@/lib/transactions';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 
 export async function GET() {
