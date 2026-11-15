@@ -24,7 +24,7 @@
     "recharts": "^2.12.7",
     "tailwindcss": "^3.4.13",
     "typescript": "^5.6.2",
-    "zustand": "^4.7.0"
+    "zustand": "^4.5.7"
   },
   "devDependencies": {
     "@types/node": "^22.7.5",
