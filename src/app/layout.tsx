@@ -14,15 +14,15 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#050505',
+  themeColor: '#000000',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr">
-      <body className="bg-neutralBg text-white antialiased">
+      <body className="bg-black text-white antialiased">
         <ServiceWorkerRegister />
-        <div className="min-h-screen pb-20 md:pb-0">{children}</div>
+        <div className="min-h-screen">{children}</div>
         <BottomNav />
       </body>
     </html>
