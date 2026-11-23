@@ -1,0 +1,2 @@
+import AppModulePage from '@/components/AppModulePage';
+export default function AcademiePage() { return <AppModulePage title="Académie" description="Retrouve ton parcours d'apprentissage et tes objectifs scolaires." items={['Cours et leçons','Missions et défis','Examens et évaluations','Bibliothèque de ressources']} />; }

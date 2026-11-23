@@ -1,0 +1,2 @@
+import AppModulePage from '@/components/AppModulePage';
+export default function ClassementsPage() { return <AppModulePage title="Classements" description="Consulte les progressions individuelles et collectives." items={['Classement des étudiants','Puissance des clans','Popularité des clans','Activité de la communauté']} />; }
