@@ -91,3 +91,6 @@ button,a { -webkit-tap-highlight-color: transparent; }
 [class*="bg-emerald-"],[class*="bg-amber-"],[class*="bg-orange-"],[class*="bg-cyan-"],[class*="bg-rose-"],[class*="bg-violet-"],[class*="bg-sky-"] { background-color: rgba(37,99,235,.14) !important; }
 [class*="border-emerald-"],[class*="border-amber-"],[class*="border-orange-"],[class*="border-cyan-"],[class*="border-rose-"],[class*="border-violet-"],[class*="border-sky-"] { border-color: rgba(37,99,235,.28) !important; }
 \n[class*="f4b879"] { color: #BFD2FF !important; border-color: rgba(37,99,235,.35) !important; }\n[class*="bg-[#f4b879]"] { background-color: #2563EB !important; }\n
+[class*="from-emerald-"],[class*="from-amber-"],[class*="from-orange-"],[class*="from-cyan-"],[class*="from-rose-"],[class*="from-violet-"] { --tw-gradient-from: rgba(37,99,235,.18) var(--tw-gradient-from-position) !important; --tw-gradient-to: rgba(37,99,235,0) var(--tw-gradient-to-position) !important; }
+[class*="via-emerald-"],[class*="via-amber-"],[class*="via-orange-"] { --tw-gradient-stops: var(--tw-gradient-from), rgba(10,13,20,.9) var(--tw-gradient-via-position), var(--tw-gradient-to) !important; }
+[class*="to-emerald-"],[class*="to-amber-"],[class*="to-orange-"] { --tw-gradient-to: #000000 var(--tw-gradient-to-position) !important; }
