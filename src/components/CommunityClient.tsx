@@ -31,14 +31,14 @@ export default function CommunityClient() {
     const { data: rows, error: postError } = await supabase.from('hma_posts').select('id,body,image_url,created_at,author_profile_id').eq('is_published', true).order('created_at', { ascending: false }).limit(40);
     if (postError) { setError(postError.message); setLoading(false); return; }
     const list = (rows || []) as Post[];
-    const authorIds = [...new Set(list.map(p => p.author_profile_id))];
+    const authorIds = Array.from(new Set(list.map(p => p.author_profile_id)));
     const postIds = list.map(p => p.id);
     const [{ data: authors }, { data: likes }, { data: comments }] = await Promise.all([
       authorIds.length ? supabase.from('hma_profiles').select('id,display_name,username,avatar_url,class_rank').in('id', authorIds) : Promise.resolve({data:[]}),
       postIds.length ? supabase.from('hma_post_likes').select('post_id,profile_id').in('post_id', postIds) : Promise.resolve({data:[]}),
       postIds.length ? supabase.from('hma_post_comments').select('id,post_id,body,created_at,author_profile_id').in('post_id', postIds).order('created_at', {ascending:true}) : Promise.resolve({data:[]})
     ]);
-    const commentAuthors = [...new Set((comments || []).map((c:any) => c.author_profile_id))];
+    const commentAuthors = Array.from(new Set((comments || []).map((c:any) => c.author_profile_id)));
     const { data: commentProfiles } = commentAuthors.length ? await supabase.from('hma_profiles').select('id,display_name,username,avatar_url,class_rank').in('id', commentAuthors) : {data:[]};
     const byId = new Map((authors || []).map((p:any) => [p.id,p]));
     const commentById = new Map((commentProfiles || []).map((p:any) => [p.id,p]));
