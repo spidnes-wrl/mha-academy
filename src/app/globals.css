@@ -64,7 +64,7 @@ button,a { -webkit-tap-highlight-color: transparent; }
 
 .glass-fallback { background: #111827; }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .glass-surface,.mha-glass { background: #111827; }
+  .glass-surface { background: #111827; }
 }
 .mha-sticker {
   display: inline-flex; align-items: center; border: 1px solid rgba(147,180,255,.32);
