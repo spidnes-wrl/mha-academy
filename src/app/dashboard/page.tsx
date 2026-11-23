@@ -47,6 +47,7 @@ export default async function DashboardPage() {
       <Card><Target size={20} className="text-[#BFD2FF]" strokeWidth={1.6}/><p className="mt-3 text-xl font-bold">{missionCount}</p><p className="text-xs text-[#9AA7C2]">Missions actives</p></Card>
     </div>
     <Card className="mt-4"><div className="flex items-center justify-between"><div><p className="font-semibold">Points d’évaluation</p><p className="mt-1 text-xs text-[#9AA7C2]">Résultats académiques</p></div><p className="text-xl font-bold text-[#BFD2FF]">{Number(profile?.exam_points ?? 0).toLocaleString('fr-FR')}</p></div></Card>
+    <section className="mt-6"><h2 className="mb-3 text-lg font-bold">Badges</h2><div className="flex flex-wrap gap-2"><span className="mha-badge rounded-full px-3 py-2 text-xs font-semibold">Classe {profile?.class_rank || '—'}</span><span className="mha-badge rounded-full px-3 py-2 text-xs font-semibold">Membre MHA</span><span className="mha-badge rounded-full px-3 py-2 text-xs font-semibold">XP accumulée</span></div></section>
     <section className="mt-6">
       <h2 className="mb-3 text-lg font-bold">Tes espaces</h2>
       <div className="grid grid-cols-2 gap-3">
