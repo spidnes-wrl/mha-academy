@@ -1,7 +1,29 @@
 import type { Config } from 'tailwindcss';
+
 const config: Config = {
- content:['./src/pages/**/*.{js,ts,jsx,tsx,mdx}','./src/components/**/*.{js,ts,jsx,tsx,mdx}','./src/app/**/*.{js,ts,jsx,tsx,mdx}'],
- theme:{extend:{colors:{primaryDark:'#050505',primaryGreen:'#f4b879',primaryLight:'#ffd09d',accentApricot:'#f4b879',primaryBlue:'#438bff',warningRed:'#ef5555',notificationGray:'#8b9099',neutralBg:'#050505',neutralCard:'#101010',neutralBorder:'#292929'},boxShadow:{glow:'0 10px 28px rgba(244,184,121,.16)'},backgroundImage:{hero:'radial-gradient(circle at top left, rgba(67,139,255,.13), transparent 55%), radial-gradient(circle at bottom right, rgba(244,184,121,.10), transparent 48%)'}}},
- plugins:[]
+  content: ['./src/pages/**/*.{js,ts,jsx,tsx,mdx}', './src/components/**/*.{js,ts,jsx,tsx,mdx}', './src/app/**/*.{js,ts,jsx,tsx,mdx}'],
+  theme: {
+    extend: {
+      colors: {
+        primaryDark: '#000000',
+        primaryBlue: '#2563EB',
+        primaryPressed: '#1D4ED8',
+        primaryLight: '#BFD2FF',
+        accentApricot: '#2563EB',
+        primaryGreen: '#2563EB',
+        neutralBg: '#000000',
+        neutralCard: '#0A0D14',
+        neutralBorder: '#1B2437',
+        mutedText: '#9AA7C2',
+      },
+      boxShadow: {
+        glow: '0 12px 34px rgba(37, 99, 235, 0.18)',
+      },
+      backgroundImage: {
+        hero: 'radial-gradient(circle at 80% 0%, rgba(37,99,235,.20), transparent 52%)',
+      },
+    },
+  },
+  plugins: [],
 };
 export default config;
