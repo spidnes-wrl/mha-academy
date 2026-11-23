@@ -83,3 +83,8 @@ button,a { -webkit-tap-highlight-color: transparent; }
 }
 
 @media (min-width: 768px) { body { padding-left: 6rem; } }
+
+/* Legacy utility colors are normalized to the single blue accent family. */
+[class*="text-emerald-"],[class*="text-amber-"],[class*="text-orange-"],[class*="text-cyan-"],[class*="text-rose-"],[class*="text-violet-"],[class*="text-sky-"] { color: #BFD2FF !important; }
+[class*="bg-emerald-"],[class*="bg-amber-"],[class*="bg-orange-"],[class*="bg-cyan-"],[class*="bg-rose-"],[class*="bg-violet-"],[class*="bg-sky-"] { background-color: rgba(37,99,235,.14) !important; }
+[class*="border-emerald-"],[class*="border-amber-"],[class*="border-orange-"],[class*="border-cyan-"],[class*="border-rose-"],[class*="border-violet-"],[class*="border-sky-"] { border-color: rgba(37,99,235,.28) !important; }
