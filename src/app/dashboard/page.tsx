@@ -3,6 +3,7 @@ import { Coins, Target, Award, BookOpen, Shield, Gamepad2, ArrowUpRight } from '
 import { requireAuthenticatedUser } from '@/lib/permissions';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { AvatarFrame, Banner, ChibiSticker, Card } from '@/components/ui/AcademyUI';
+import ProfileEditor from '@/components/ProfileEditor';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,6 +36,7 @@ export default async function DashboardPage() {
       <AvatarFrame src={profile?.avatar_url} name={displayName} size="h-20 w-20"/>
       <div className="pb-2"><p className="text-sm font-bold">{profile?.username ? '@'+profile.username : displayName}</p><p className="text-xs text-[#9AA7C2]">Étudiant MHA</p></div>
     </div>
+    <div className="mt-4 flex justify-end"><ProfileEditor firstName={profile?.first_name ?? ''} lastName={profile?.last_name ?? ''} bio={profile?.bio ?? ''} avatarUrl={profile?.avatar_url ?? ''}/></div>
     <Card className="mt-5">
       <div className="flex items-center justify-between"><div><p className="text-xs font-semibold uppercase tracking-wider text-[#9AA7C2]">Expérience</p><p className="mt-1 text-2xl font-bold text-[#BFD2FF]">{xp.toLocaleString('fr-FR')} XP</p></div><Award className="text-blue-400" size={24} strokeWidth={1.6}/></div>
       <div className="mt-4 h-2 overflow-hidden rounded-full bg-[#1B2437]"><div className="h-full w-full rounded-full bg-gradient-to-r from-blue-700 to-blue-400"/></div>
