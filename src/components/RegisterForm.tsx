@@ -1,7 +1,7 @@
 'use client';
 import { FormEvent, useState } from 'react';
 import Link from 'next/link';
-import { createSupabaseBrowserClient } from '@/lib/supabase/browser';
+import { createBrowserSupabaseClient } from '@/lib/supabase/client';
 import InstallAppButton from '@/components/InstallAppButton';
 export default function RegisterForm() {
   const [loading, setLoading] = useState(false);
@@ -19,8 +19,14 @@ export default function RegisterForm() {
     if (!/^[a-z0-9_]{3,20}$/.test(username)) { setErrorMessage("Le nom d'utilisateur doit contenir 3 à 20 caractères : lettres, chiffres ou _."); setLoading(false); return; }
     if (password.length < 8) { setErrorMessage('Le mot de passe doit contenir au moins 8 caractères.'); setLoading(false); return; }
     try {
-      const supabase = createSupabaseBrowserClient();
-      const { error } = await supabase.auth.signUp({ email, password, options: { data: { first_name: firstName, last_name: lastName, username } } });
+      const supabase = createBrowserSupabaseClient();
+      const { error } = await supabase.auth.signUp({
+        email, password,
+        options: {
+          data: { first_name: firstName, last_name: lastName, username },
+          emailRedirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
       if (error) throw error;
       setSuccessMessage("Ton inscription a été enregistrée. Si une confirmation par e-mail est demandée, vérifie ta boîte de réception.");
       formElement.reset();
