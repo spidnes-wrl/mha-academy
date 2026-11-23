@@ -1,9 +1,8 @@
 'use client';
 import { FormEvent, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { createBrowserSupabaseClient } from '@/lib/supabase/client';
+
 export default function LoginForm() {
- const router=useRouter();
  const [loading,setLoading]=useState(false);
  const [errorMessage,setErrorMessage]=useState('');
  async function handleSubmit(event:FormEvent<HTMLFormElement>){
@@ -15,10 +14,10 @@ export default function LoginForm() {
    const supabase=createBrowserSupabaseClient();
    const {error}=await supabase.auth.signInWithPassword({email,password});
    if(error)throw error;
-   router.replace('/dashboard');
-   router.refresh();
-  }catch(error){setErrorMessage(error instanceof Error?error.message:'Connexion impossible.');}
-  finally{setLoading(false);}
+   // Force a fresh document request so the server receives the newly written
+   // Supabase auth cookies before rendering protected pages.
+   window.location.replace('/dashboard');
+  }catch(error){setErrorMessage(error instanceof Error?error.message:'Connexion impossible.');setLoading(false);}
  }
  return <form onSubmit={handleSubmit} className="mt-8 space-y-5">
   <div><label htmlFor="email" className="mb-2 block text-sm text-slate-300">E-mail</label><input id="email" name="email" className="input" type="email" autoComplete="email" placeholder="etudiant@academy.fr" required /></div>
