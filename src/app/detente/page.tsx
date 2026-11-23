@@ -1,0 +1,2 @@
+import AppModulePage from '@/components/AppModulePage';
+export default function DetentePage() { return <AppModulePage title="Détente" description="Fais une pause avec les activités ludiques de l'académie." items={['Quiz Otaku','Mini-jeux','Combats et tournois','Lecture manga et webtoon']} />; }
