@@ -72,7 +72,7 @@ button,a { -webkit-tap-highlight-color: transparent; }
   padding: .35rem .65rem; font-size: .68rem; font-weight: 700; letter-spacing: .06em;
 }
 .mha-badge { background: rgba(37,99,235,.16); color: #BFD2FF; border: 1px solid rgba(37,99,235,.3); }
-.mha-warning { background: rgba(239,68,68,.12); color: #FCA5A5; border: 1px solid rgba(239,68,68,.25); }
+.mha-warning { background: rgba(37,99,235,.12); color: #BFD2FF; border: 1px solid rgba(37,99,235,.25); }
 .mha-notification { background: rgba(37,99,235,.12); color: #BFD2FF; border: 1px solid rgba(37,99,235,.22); }
 .mha-page { width: min(100%, 760px); margin-inline: auto; padding: 1.25rem 1rem calc(7.5rem + env(safe-area-inset-bottom)); }
 .mha-banner { position: relative; min-height: 180px; border: 1px solid var(--mha-border); border-radius: 24px; background: radial-gradient(ellipse at 78% 18%, rgba(37,99,235,.34), transparent 45%), linear-gradient(120deg,#0A0D14,#101827 65%,#080B12); }
@@ -94,3 +94,4 @@ button,a { -webkit-tap-highlight-color: transparent; }
 [class*="from-emerald-"],[class*="from-amber-"],[class*="from-orange-"],[class*="from-cyan-"],[class*="from-rose-"],[class*="from-violet-"] { --tw-gradient-from: rgba(37,99,235,.18) var(--tw-gradient-from-position) !important; --tw-gradient-to: rgba(37,99,235,0) var(--tw-gradient-to-position) !important; }
 [class*="via-emerald-"],[class*="via-amber-"],[class*="via-orange-"] { --tw-gradient-stops: var(--tw-gradient-from), rgba(10,13,20,.9) var(--tw-gradient-via-position), var(--tw-gradient-to) !important; }
 [class*="to-emerald-"],[class*="to-amber-"],[class*="to-orange-"] { --tw-gradient-to: #000000 var(--tw-gradient-to-position) !important; }
+\n[class*="text-red-"],[class*="text-pink-"],[class*="text-fuchsia-"],[class*="text-purple-"],[class*="text-teal-"],[class*="text-lime-"] { color: #BFD2FF !important; }\n[class*="bg-red-"],[class*="bg-pink-"],[class*="bg-fuchsia-"],[class*="bg-purple-"],[class*="bg-teal-"],[class*="bg-lime-"] { background-color: rgba(37,99,235,.14) !important; }\n[class*="border-red-"],[class*="border-pink-"],[class*="border-fuchsia-"],[class*="border-purple-"],[class*="border-teal-"],[class*="border-lime-"] { border-color: rgba(37,99,235,.28) !important; }\n
