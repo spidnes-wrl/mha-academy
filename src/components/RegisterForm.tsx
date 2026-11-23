@@ -31,7 +31,7 @@ export default function RegisterForm() {
   return <>
     {successMessage ? <div className="mt-8 space-y-5">
       <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-4"><p className="font-semibold text-emerald-200">Inscription envoyée</p><p className="mt-2 text-sm leading-6 text-slate-300">{successMessage}</p></div>
-      <section className="rounded-2xl border border-neutralBorder bg-slate-950/40 p-4"><h2 className="font-semibold text-white">Emporte MHA Academy avec toi</h2><p className="mb-4 mt-1 text-sm text-slate-400">Installe l'application sur ton écran d'accueil pour y accéder comme à une vraie application.</p><InstallAppButton show /></section>
+      <section className="rounded-2xl border border-neutralBorder bg-slate-950/40 p-4"><h2 className="font-semibold text-white">Emporte MHA Academy avec toi</h2><p className="mt-1 text-sm text-slate-400">Installe l'application sur ton écran d'accueil pour y accéder comme à une vraie application.</p></section>
       <Link href="/auth/login" className="button-secondary block w-full text-center">Continuer vers la connexion</Link>
     </div> : <form onSubmit={handleSubmit} className="mt-8 space-y-5">
       <div className="grid grid-cols-2 gap-4">
@@ -44,6 +44,6 @@ export default function RegisterForm() {
       {errorMessage && <p role="alert" className="rounded-xl border border-rose-400/20 bg-rose-400/10 p-3 text-sm text-rose-200">{errorMessage}</p>}
       <button type="submit" disabled={loading} className="button-primary w-full disabled:cursor-not-allowed disabled:opacity-60">{loading ? 'Création du compte…' : "S'inscrire"}</button>
     </form>}
-    <div className="hidden"><InstallAppButton show={false} /></div>
+    <div className={successMessage ? 'mt-4' : 'hidden'}><InstallAppButton show={Boolean(successMessage)} /></div>
   </>;
 }
