@@ -43,7 +43,7 @@ export default function MessagesClient(){
    chatRows=conversations||[];
   }
   const allMembers=ids.length?(await supabase.from('hma_conversation_members').select('conversation_id,profile_id').in('conversation_id',ids)).data||[]:[];
-  const otherIds=[...new Set((allMembers as any[]).filter(m=>m.profile_id!==profile.id).map(m=>m.profile_id))];
+  const otherIds=Array.from(new Set((allMembers as any[]).filter(m=>m.profile_id!==profile.id).map(m=>m.profile_id)));
   const {data:profiles}=otherIds.length?await supabase.from('hma_profiles').select('id,display_name,username,avatar_url').in('id',otherIds):{data:[]};
   const profileMap=new Map((profiles||[]).map((p:any)=>[p.id,p]));
   const chatList:Chat[]=chatRows.map(c=>({...c,other:profileMap.get((allMembers as any[]).find(m=>m.conversation_id===c.id&&m.profile_id!==profile.id)?.profile_id)}));
@@ -51,7 +51,7 @@ export default function MessagesClient(){
   if(!active&&chatList[0])setActive(chatList[0].id);
   const {data:incoming}=await supabase.from('hma_dm_requests').select('id,sender_profile_id,created_at').eq('recipient_profile_id',profile.id).eq('status','pending').order('created_at',{ascending:false});
   const reqs=incoming||[];
-  const senderIds=[...new Set(reqs.map((r:any)=>r.sender_profile_id))];
+  const senderIds=Array.from(new Set(reqs.map((r:any)=>r.sender_profile_id)));
   const {data:senders}=senderIds.length?await supabase.from('hma_profiles').select('id,display_name,username,avatar_url').in('id',senderIds):{data:[]};
   setRequests(reqs);
   setRequestProfiles(Object.fromEntries((senders||[]).map((p:any)=>[p.id,p])));
