@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { Download, Smartphone } from 'lucide-react';
 type InstallPromptEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }> };
-export default function InstallAppButton() {
+export default function InstallAppButton({ show = true }: { show?: boolean }) {
   const [installPrompt, setInstallPrompt] = useState<InstallPromptEvent | null>(null);
   const [installed, setInstalled] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
@@ -22,6 +22,7 @@ export default function InstallAppButton() {
     if (result.outcome === 'accepted') setInstalled(true);
     setInstallPrompt(null);
   }
+  if (!show) return null;
   if (installed) return <p className="flex items-center gap-2 text-sm text-emerald-300"><Smartphone size={17} /> MHA Academy est installé sur cet appareil.</p>;
   return <div className="space-y-3">
     <button type="button" onClick={install} className="button-primary inline-flex w-full items-center justify-center gap-2"><Download size={18} /> Installer MHA Academy</button>
