@@ -11,7 +11,7 @@ export default function RegisterForm() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const [successDestination, setSuccessDestination] = useState('/auth/login?registered=1');
+  const [successDestination, setSuccessDestination] = useState('/');
   const [continueLabel, setContinueLabel] = useState('Continuer vers la connexion');
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -49,12 +49,12 @@ export default function RegisterForm() {
         },
       });
       if (error) throw error;
-      const destination = data.session ? '/dashboard' : '/auth/login?registered=1';
+      const destination = data.session ? '/dashboard' : '/';
       setSuccessDestination(destination);
-      setContinueLabel(data.session ? 'Accéder à MHA Academy' : 'Continuer vers la connexion');
+      setContinueLabel(data.session ? 'Accéder à MHA Academy' : 'Retourner à l’accueil');
       setSuccessMessage(data.session
         ? 'Ton compte est prêt. Tu peux maintenant accéder à ton espace MHA Academy.'
-        : 'Ton inscription a été enregistrée. Si une confirmation par e-mail est demandée, vérifie ta boîte de réception.');
+        : 'Ton inscription a été enregistrée. Si une confirmation par e-mail est demandée, vérifie ta boîte de réception. En attendant, tu peux explorer les pages publiques de l’académie.');
       formElement.reset();
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "L'inscription n'a pas pu aboutir.");
@@ -74,7 +74,7 @@ export default function RegisterForm() {
       <button
         type="button"
         onClick={leaveRegistrationConfirmation}
-        aria-label="Fermer la confirmation et continuer"
+        aria-label="Fermer et retourner à l’accueil"
         title="Fermer"
         className="absolute right-3 top-3 grid h-11 w-11 place-items-center rounded-full border border-[#1B2437] bg-[#111827] text-[#BFD2FF] transition hover:border-blue-500 hover:bg-blue-600/20"
       ><X size={20} strokeWidth={1.8}/></button>
@@ -88,7 +88,7 @@ export default function RegisterForm() {
         <InstallAppButton show />
       </section>
       <button type="button" onClick={leaveRegistrationConfirmation} className="button-primary w-full">{continueLabel}</button>
-      <p className="text-center text-xs text-[#9AA7C2]">Tu peux fermer cet écran avec la croix en haut à droite.</p>
+      <p className="text-center text-xs text-[#9AA7C2]">Tu peux fermer cette confirmation et continuer à explorer MHA Academy.</p>
     </div> : <form onSubmit={handleSubmit} className="mt-8 space-y-5">
       <div className="grid grid-cols-2 gap-4">
         <div><label htmlFor="first_name" className="mb-2 block text-sm text-slate-300">Prénom</label><input id="first_name" name="first_name" className="input" autoComplete="given-name" placeholder="Jean" required /></div>
