@@ -9,6 +9,7 @@ export default function LoginPage({ searchParams }: { searchParams?: { registere
    <p className="mt-2 text-sm text-[#9AA7C2]">Connecte-toi pour retrouver ton espace.</p>
    {searchParams?.registered === '1' && <p role="status" className="mt-5 rounded-xl border border-blue-500/25 bg-blue-500/10 p-3 text-sm leading-6 text-[#BFD2FF]">Ton inscription a bien été envoyée. Si une confirmation par e-mail est demandée, confirme ton adresse avant de te connecter.</p>}
    <LoginForm />
+   <p className="mt-5 text-center text-sm"><Link href="/" className="font-semibold text-[#BFD2FF]">← Retour à l’accueil et aux autres pages</Link></p>
    <p className="mt-6 text-center text-sm text-[#9AA7C2]">Pas encore de compte ?{' '}<Link href="/auth/register" className="font-semibold text-[#BFD2FF]">Créer un compte</Link></p>
   </div>
  </main>;
