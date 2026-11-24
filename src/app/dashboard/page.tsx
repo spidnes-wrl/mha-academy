@@ -14,8 +14,8 @@ export default async function DashboardPage() {
     const user = await requireAuthenticatedUser();
     const supabase = createSupabaseServerClient();
     const [{ data }, { count }] = await Promise.all([
-      supabase.from('hma_profiles').select('username,first_name,last_name,avatar_url,bio,class_rank,xp,exam_points,virtual_coins').eq('user_id', user.id).single(),
-      supabase.from('hma_missions').select('id', { count: 'exact', head: true }).eq('status', 'active'),
+      supabase.from('hma_profiles').select('display_name,username,first_name,last_name,avatar_url,bio,class_rank,xp,points,coins').eq('user_id', user.id).single(),
+      supabase.from('hma_missions').select('id', { count: 'exact', head: true }).eq('is_active', true),
     ]);
     profile = data;
     missionCount = count ?? 0;
@@ -23,7 +23,7 @@ export default async function DashboardPage() {
     return <main className="mha-page"><Banner><p className="text-xs font-semibold uppercase tracking-widest text-[#BFD2FF]">MHA Academy</p><h1 className="mt-3 text-2xl font-bold">Ton profil t’attend.</h1><p className="mt-2 text-sm text-[#BFD2FF]">Connecte-toi pour retrouver ta progression.</p></Banner><Link href="/auth/login" className="button-primary mt-8">Se connecter</Link></main>;
   }
 
-  const displayName = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || profile?.username || 'Étudiant MHA';
+  const displayName = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || profile?.display_name || profile?.username || 'Étudiant MHA';
   const xp = Number(profile?.xp ?? 0);
   return <main className="mha-page">
     <Banner className="min-h-[205px] pb-8">
@@ -43,10 +43,10 @@ export default async function DashboardPage() {
       <p className="mt-2 text-xs text-[#9AA7C2]">XP accumulée</p>
     </Card>
     <div className="mt-4 grid grid-cols-2 gap-3">
-      <Card><Coins size={20} className="text-[#BFD2FF]" strokeWidth={1.6}/><p className="mt-3 text-xl font-bold">{Number(profile?.virtual_coins ?? 0).toLocaleString('fr-FR')}</p><p className="text-xs text-[#9AA7C2]">Pièces</p></Card>
+      <Card><Coins size={20} className="text-[#BFD2FF]" strokeWidth={1.6}/><p className="mt-3 text-xl font-bold">{Number(profile?.coins ?? 0).toLocaleString('fr-FR')}</p><p className="text-xs text-[#9AA7C2]">Pièces</p></Card>
       <Card><Target size={20} className="text-[#BFD2FF]" strokeWidth={1.6}/><p className="mt-3 text-xl font-bold">{missionCount}</p><p className="text-xs text-[#9AA7C2]">Missions actives</p></Card>
     </div>
-    <Card className="mt-4"><div className="flex items-center justify-between"><div><p className="font-semibold">Points d’évaluation</p><p className="mt-1 text-xs text-[#9AA7C2]">Résultats académiques</p></div><p className="text-xl font-bold text-[#BFD2FF]">{Number(profile?.exam_points ?? 0).toLocaleString('fr-FR')}</p></div></Card>
+    <Card className="mt-4"><div className="flex items-center justify-between"><div><p className="font-semibold">Points d’évaluation</p><p className="mt-1 text-xs text-[#9AA7C2]">Résultats académiques</p></div><p className="text-xl font-bold text-[#BFD2FF]">{Number(profile?.points ?? 0).toLocaleString('fr-FR')}</p></div></Card>
     <section className="mt-6"><h2 className="mb-3 text-lg font-bold">Badges</h2><div className="flex flex-wrap gap-2"><span className="mha-badge rounded-full px-3 py-2 text-xs font-semibold">Classe {profile?.class_rank || '—'}</span><span className="mha-badge rounded-full px-3 py-2 text-xs font-semibold">Membre MHA</span><span className="mha-badge rounded-full px-3 py-2 text-xs font-semibold">XP accumulée</span></div></section>
     <section className="mt-6">
       <h2 className="mb-3 text-lg font-bold">Tes espaces</h2>
