@@ -74,7 +74,7 @@ export default function RegisterForm() {
       <button
         type="button"
         onClick={leaveRegistrationConfirmation}
-        aria-label="Fermer la confirmation et continuer vers la connexion"
+        aria-label="Fermer la confirmation et continuer"
         title="Fermer"
         className="absolute right-3 top-3 grid h-11 w-11 place-items-center rounded-full border border-[#1B2437] bg-[#111827] text-[#BFD2FF] transition hover:border-blue-500 hover:bg-blue-600/20"
       ><X size={20} strokeWidth={1.8}/></button>
