@@ -11,6 +11,8 @@ export default function RegisterForm() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [successDestination, setSuccessDestination] = useState('/auth/login?registered=1');
+  const [continueLabel, setContinueLabel] = useState('Continuer vers la connexion');
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -38,7 +40,7 @@ export default function RegisterForm() {
 
     try {
       const supabase = createBrowserSupabaseClient();
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -47,7 +49,12 @@ export default function RegisterForm() {
         },
       });
       if (error) throw error;
-      setSuccessMessage("Ton inscription a été enregistrée. Si une confirmation par e-mail est demandée, vérifie ta boîte de réception.");
+      const destination = data.session ? '/dashboard' : '/auth/login?registered=1';
+      setSuccessDestination(destination);
+      setContinueLabel(data.session ? 'Accéder à MHA Academy' : 'Continuer vers la connexion');
+      setSuccessMessage(data.session
+        ? 'Ton compte est prêt. Tu peux maintenant accéder à ton espace MHA Academy.'
+        : 'Ton inscription a été enregistrée. Si une confirmation par e-mail est demandée, vérifie ta boîte de réception.');
       formElement.reset();
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "L'inscription n'a pas pu aboutir.");
@@ -59,7 +66,7 @@ export default function RegisterForm() {
   function leaveRegistrationConfirmation() {
     // Always create an in-app destination so Android's Back button is not
     // the only way out of the post-registration screen.
-    router.replace('/auth/login?registered=1');
+    router.replace(successDestination);
   }
 
   return <>
@@ -80,7 +87,7 @@ export default function RegisterForm() {
         <p className="mt-1 text-sm text-[#9AA7C2]">Installe l'application sur ton écran d'accueil pour y accéder comme à une vraie application.</p>
         <InstallAppButton show />
       </section>
-      <button type="button" onClick={leaveRegistrationConfirmation} className="button-primary w-full">Continuer vers la connexion</button>
+      <button type="button" onClick={leaveRegistrationConfirmation} className="button-primary w-full">{continueLabel}</button>
       <p className="text-center text-xs text-[#9AA7C2]">Tu peux fermer cet écran avec la croix en haut à droite.</p>
     </div> : <form onSubmit={handleSubmit} className="mt-8 space-y-5">
       <div className="grid grid-cols-2 gap-4">
